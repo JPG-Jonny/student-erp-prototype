@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcademiaERP - Higher Ed Management System</title>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --secondary: #0f172a;
+            --accent: #0284c7;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Layout Architecture */
+        #app-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .brand {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand-logo {
+            background: var(--primary);
+            color: white;
+            padding: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .brand-title h2 { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+        .brand-title p { font-size: 0.75rem; color: var(--text-muted); }
+
+        .nav-links {
+            list-style: none;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-grow: 1;
+        }
+
+        .nav-item button {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.9rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item button:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .nav-item button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .role-switcher-card {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            background: #f1f5f9;
+        }
+
+        .role-switcher-card select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: white;
+            font-weight: 600;
+            margin-top: 6px;
+            cursor: pointer;
+        }
+
+        /* Main Content Area */
+        .main-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        header {
+            height: 64px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .user-profile-summary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .content-area {
+            padding: 28px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* UI Scaffolding & Components */
+        .grid { display: grid; gap: 20px; }
+        .grid-4 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); }
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .metric-value { font-size: 1.8rem; font-weight: 700; margin: 8px 0; color: var(--secondary); }
+        .metric-sub { font-size: 0.85rem; color: var(--text-muted); }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.875rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-secondary { background: #e2e8f0; color: var(--text-main); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-success { background: var(--success); color: white; }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-success { background: #dcfce7; color: #15803d; }
+        .badge-warning { background: #fef3c7; color: #b45309; }
+        .badge-danger { background: #fee2e2; color: #b91c1c; }
+        .badge-info { background: #e0f2fe; color: #0369a1; }
+
+        /* Tables */
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        th { background: #f8fafc; padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-weight: 600; }
+        td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-main); }
+
+        /* Progress Bars */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; }
+        .progress-fill.warning { background: var(--warning); }
+        .progress-fill.danger { background: var(--danger); }
+
+        /* Timeline Element */
+        .timeline { border-left: 2px solid var(--border); padding-left: 20px; margin-left: 10px; }
+        .timeline-item { position: relative; margin-bottom: 20px; }
+        .timeline-item::before {
+            content: ''; position: absolute; left: -26px; top: 4px; width: 10px; height: 10px;
+            border-radius: 50%; background: var(--primary); border: 2px solid white;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal {
+            background: white; border-radius: var(--radius); width: 100%; max-width: 500px; padding: 24px; box-shadow: var(--shadow);
+        }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 16px; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem;
+        }
+
+        /* Utility Hidden */
+        .hidden { display: none !important; }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; bottom: 0; width: 100%; height: 60px; flex-direction: row; border-right: none; border-top: 1px solid var(--border); }
+            .brand, .role-switcher-card { display: none; }
+            .nav-links { flex-direction: row; justify-content: space-around; padding: 0; width: 100%; }
+            .nav-item button { flex-direction: column; font-size: 0.65rem; gap: 2px; padding: 8px; }
+            .main-wrapper { margin-bottom: 60px; }
+            .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-container">
+    <!-- Navigation Sidebar -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <div class="brand-logo"><i data-lucide="graduation-cap"></i></div>
+                <div class="brand-title">
+                    <h2>AcademiaERP</h2>
+                    <p>University Platform</p>
+                </div>
+            </div>
+            <ul class="nav-links" id="nav-menu">
+                <!-- Links injected programmatically based on Role -->
+            </ul>
+        </div>
+        <div class="role-switcher-card">
+            <label style="font-size: 0.75rem; color: var(--text-muted); font-weight:600;">ACTIVE ROLE SWITCHER</label>
+            <select id="roleSelector" onchange="switchRole(this.value)">
+                <option value="student">Student (Alex Morgan)</option>
+                <option value="faculty">Faculty (Dr. Smith)</option>
+                <option value="admin">Administrator (System)</option>
+            </select>
+        </div>
+    </aside>
+
+    <!-- Main Content Container -->
+    <div class="main-wrapper">
+        <header>
+            <h3 id="page-title" style="font-weight: 600;">Dashboard</h3>
+            <div class="user-profile-summary">
+                <div style="text-align: right;" class="hidden-mobile">
+                    <div id="user-display-name" style="font-weight: 600; font-size: 0.9rem;">Alex Morgan</div>
+                    <div id="user-display-role" style="font-size: 0.75rem; color: var(--text-muted);">Student • CS Sem 6</div>
+                </div>
+                <div class="avatar" id="user-avatar">AM</div>
+            </div>
+        </header>
+
+        <div class="content-area">
+            <!-- Dynamic Content View Sections -->
+            
+            <!-- STUDENT DASHBOARD -->
+            <section id="view-student-dashboard" class="view-section">
+                <div class="grid grid-4" style="margin-bottom: 20px;">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Attendance</span><i data-lucide="calendar"></i></div>
+                        <div class="metric-value" id="dash-student-attendance">82%</div>
+                        <div class="metric-sub">Overall Threshold Safe</div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 82%;"></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Academic Credits</span><i data-lucide="award"></i></div>
+                        <div class="metric-value">94 / 120</div>
+                        <div class="metric-sub">12 Transfer Credits Claimed</div>
+                        <div class="progress-bar"><div class="progress-fill" style="width: 78%;"></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Pending Tasks</span><i data-lucide="clock"></i></div>
+                        <div class="metric-value">2</div>
+                        <div class="metric-sub" style="color: var(--warning);">Nearest Due: 2 Days</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Current CGPA</span><i data-lucide="trending-up"></i></div>
+                        <div class="metric-value">3.82</div>
+                        <div class="metric-sub">Top 5% of Department</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title"><i data-lucide="book-open"></i> Upcoming Assignments</span>
+                            <button class="btn btn-secondary" onclick="navigate('assignments')">View All</button>
+                        </div>
+                        <div id="dash-student-assignments"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title"><i data-lucide="activity"></i> Recent Activity Record</span>
+                            <button class="btn btn-secondary" onclick="navigate('activities')">View Timeline</button>
+                        </div>
+                        <div class="timeline" id="dash-student-activities"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FACULTY DASHBOARD -->
+            <section id="view-faculty-dashboard" class="view-section hidden">
+                <div class="grid grid-4" style="margin-bottom: 20px;">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Assigned Classes</span><i data-lucide="book"></i></div>
+                        <div class="metric-value">3</div>
+                        <div class="metric-sub">CS301, CS402, CS505</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Total Students</span><i data-lucide="users"></i></div>
+                        <div class="metric-value">142</div>
+                        <div class="metric-sub">Avg Attendance: 84%</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Submissions to Grade</span><i data-lucide="file-check"></i></div>
+                        <div class="metric-value">18</div>
+                        <div class="metric-sub" style="color: var(--warning);">Pending Review</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Class Performance</span><i data-lucide="bar-chart-2"></i></div>
+                        <div class="metric-value">B+ Avg</div>
+                        <div class="metric-sub">Midterm Evaluation</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title"><i data-lucide="plus-circle"></i> Quick Actions</span>
+                        </div>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="openModal('modal-create-assignment')"><i data-lucide="plus"></i> New Assignment</button>
+                            <button class="btn btn-secondary" onclick="navigate('faculty-attendance')"><i data-lucide="check-square"></i> Mark Attendance</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title"><i data-lucide="pie-chart"></i> Assignment Analytics</span>
+                        </div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 10px;">Submission metrics across CS301 Database Systems</p>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                            <span>Submitted: <b>38/42</b></span>
+                            <span>Pending: <b>4</b></span>
+                            <span>Avg Grade: <b>88%</b></span>
+                        </div>
+                        <div class="progress-bar" style="height:12px;"><div class="progress-fill" style="width: 90%;"></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ADMIN DASHBOARD -->
+            <section id="view-admin-dashboard" class="view-section hidden">
+                <div class="grid grid-4" style="margin-bottom: 20px;">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Total Enrolled</span><i data-lucide="graduation-cap"></i></div>
+                        <div class="metric-value">2,840</div>
+                        <div class="metric-sub">Across 8 Departments</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Faculty Members</span><i data-lucide="briefcase"></i></div>
+                        <div class="metric-value">124</div>
+                        <div class="metric-sub">Full-time & Adjunct</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Credit Transfers</span><i data-lucide="arrow-right-left"></i></div>
+                        <div class="metric-value" id="admin-pending-transfers-count">2</div>
+                        <div class="metric-sub" style="color: var(--warning);">Action Required</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">System Attendance</span><i data-lucide="check-circle"></i></div>
+                        <div class="metric-value">86.4%</div>
+                        <div class="metric-sub">Campus Wide Avg</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i data-lucide="arrow-right-left"></i> Credit Transfer Approvals (HEI Requests)</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Source Institution</th>
+                                    <th>Course</th>
+                                    <th>Credits</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-credit-transfers-table">
+                                <!-- Injected programmatically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ASSIGNMENTS MODULE -->
+            <section id="view-assignments" class="view-section hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Assignment Workspace</span>
+                        <div id="faculty-assignment-controls" class="hidden">
+                            <button class="btn btn-primary" onclick="openModal('modal-create-assignment')"><i data-lucide="plus"></i> Create Assignment</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Subject</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Grade</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="assignments-table-body">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ATTENDANCE MODULE -->
+            <section id="view-attendance" class="view-section hidden">
+                <div id="student-attendance-view">
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header"><span class="card-title">Attendance Warning Threshold</span></div>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">Institutions enforce a strict minimum requirement of 75% attendance for course credit qualification.</p>
+                    </div>
+                    <div class="grid grid-3" id="subject-attendance-list">
+                        <!-- Dynamic render -->
+                    </div>
+                </div>
+
+                <div id="faculty-attendance-view" class="hidden">
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">Mark Class Attendance</span></div>
+                        <div class="grid grid-3" style="margin-bottom: 16px;">
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <select><option>CS301 - Database Systems</option><option>CS402 - Algorithms</option></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Date</label>
+                                <input type="date" value="2026-03-30">
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr><th>Student Name</th><th>Student ID</th><th>Status</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Alex Morgan</td><td>STU9042</td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm" onclick="toggleAttendance(this)">Present</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jordan Lee</td><td>STU9043</td>
+                                        <td>
+                                            <button class="btn btn-danger btn-sm" onclick="toggleAttendance(this)">Absent</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Taylor Swift</td><td>STU9044</td>
+                                        <td>
+                                            <button class="btn btn-success btn-sm" onclick="toggleAttendance(this)">Present</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <button class="btn btn-primary" style="margin-top: 15px;" onclick="alert('Attendance Saved Successfully!')">Save Attendance Sheet</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STUDENT ACTIVITY RECORD MODULE -->
+            <section id="view-activities" class="view-section hidden">
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <span class="card-title">Comprehensive Activity Ledger</span>
+                        <button class="btn btn-primary" onclick="openModal('modal-add-activity')"><i data-lucide="plus"></i> Add Activity</button>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Verified records of extra-curricular achievements, internships, and certifications.</p>
+                </div>
+                <div class="card">
+                    <div class="timeline" id="full-activity-timeline">
+                        <!-- Dynamic timeline render -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- CREDITS & TRANSFER MODULE -->
+            <section id="view-credits" class="view-section hidden">
+                <div class="grid grid-3" style="margin-bottom: 20px;">
+                    <div class="card">
+                        <div class="card-title">Required Credits</div>
+                        <div class="metric-value">120</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Earned Credits</div>
+                        <div class="metric-value" style="color: var(--success);">94</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Remaining Credits</div>
+                        <div class="metric-value" style="color: var(--warning);">26</div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header">
+                        <span class="card-title"><i data-lucide="arrow-right-left"></i> Credit Transfer Requests (HEI Transfer)</span>
+                        <button class="btn btn-primary" onclick="openModal('modal-request-transfer')"><i data-lucide="plus"></i> Request Credit Transfer</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Source Institution</th>
+                                    <th>Destination</th>
+                                    <th>Course/Subject</th>
+                                    <th>Credits</th>
+                                    <th>Grade</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-credit-transfers-table">
+                                <!-- Dynamic Render -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ACADEMIC PROGRESS MODULE -->
+            <section id="view-progress" class="view-section hidden">
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-header"><span class="card-title">Semester Performance Tracking</span></div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr><th>Semester</th><th>CGPA</th><th>Credits Earned</th><th>Attendance</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Semester 1</td><td>3.60</td><td>18</td><td>90%</td><td><span class="badge badge-success">Completed</span></td></tr>
+                                <tr><td>Semester 2</td><td>3.75</td><td>18</td><td>88%</td><td><span class="badge badge-success">Completed</span></td></tr>
+                                <tr><td>Semester 3</td><td>3.80</td><td>20</td><td>85%</td><td><span class="badge badge-success">Completed</span></td></tr>
+                                <tr><td>Semester 4</td><td>3.85</td><td>20</td><td>82%</td><td><span class="badge badge-success">Completed</span></td></tr>
+                                <tr><td>Semester 5</td><td>3.90</td><td>18</td><td>80%</td><td><span class="badge badge-success">Completed</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STUDENT PROFILE -->
+            <section id="view-profile" class="view-section hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Student Profile Dossier</span>
+                        <button class="btn btn-secondary" onclick="alert('Edit profile functionality triggered.')">Edit Profile</button>
+                    </div>
+                    <div class="grid grid-2">
+                        <div>
+                            <p><b>Full Name:</b> Alex Morgan</p><br>
+                            <p><b>Student ID:</b> STU9042</p><br>
+                            <p><b>Email:</b> alex.morgan@university.edu</p><br>
+                            <p><b>Department:</b> Computer Science & Engineering</p>
+                        </div>
+                        <div>
+                            <p><b>Program:</b> B.Tech Computer Science</p><br>
+                            <p><b>Semester:</b> 6th Semester</p><br>
+                            <p><b>Enrollment Year:</b> 2023</p><br>
+                            <p><b>CGPA:</b> 3.82</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DIALOGS -->
+
+<!-- Create Assignment Modal -->
+<div class="modal-overlay" id="modal-create-assignment">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Create New Assignment</h3>
+            <button onclick="closeModal('modal-create-assignment')" style="border:none; background:none; cursor:pointer;">X</button>
+        </div>
+        <form onsubmit="handleCreateAssignment(event)">
+            <div class="form-group">
+                <label>Assignment Title</label>
+                <input type="text" id="new-assign-title" required>
+            </div>
+            <div class="form-group">
+                <label>Subject</label>
+                <select id="new-assign-subject">
+                    <option>CS301 - Database Systems</option>
+                    <option>CS402 - Software Engineering</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Due Date</label>
+                <input type="date" id="new-assign-date" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="new-assign-desc" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Publish Assignment</button>
+        </form>
+    </div>
+</div>
+
+<!-- Submit Assignment Modal -->
+<div class="modal-overlay" id="modal-submit-assignment">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Submit Assignment Work</h3>
+            <button onclick="closeModal('modal-submit-assignment')" style="border:none; background:none; cursor:pointer;">X</button>
+        </div>
+        <form onsubmit="handleSubmitAssignment(event)">
+            <input type="hidden" id="submit-assign-id">
+            <div class="form-group">
+                <label>Upload File (Simulation)</label>
+                <input type="file" required>
+            </div>
+            <div class="form-group">
+                <label>Comments / Notes</label>
+                <textarea rows="2" placeholder="Optional comments..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-success" style="width:100%;">Complete Submission</button>
+        </form>
+    </div>
+</div>
+
+<!-- Add Activity Modal -->
+<div class="modal-overlay" id="modal-add-activity">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Record Activity Achievement</h3>
+            <button onclick="closeModal('modal-add-activity')" style="border:none; background:none; cursor:pointer;">X</button>
+        </div>
+        <form onsubmit="handleAddActivity(event)">
+            <div class="form-group">
+                <label>Activity Title</label>
+                <input type="text" id="act-title" required placeholder="e.g., Hackathon First Runner Up">
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="act-cat">
+                    <option>Academic Achievement</option>
+                    <option>Workshop / Seminar</option>
+                    <option>Internship</option>
+                    <option>Certification</option>
+                    <option>Extra-Curricular / Cultural</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Organization / Issuer</label>
+                <input type="text" id="act-org" required placeholder="e.g., IEEE Student Chapter">
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="act-date" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Save Activity Record</button>
+        </form>
+    </div>
+</div>
+
+<!-- Request Credit Transfer Modal -->
+<div class="modal-overlay" id="modal-request-transfer">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Request HEI Credit Transfer</h3>
+            <button onclick="closeModal('modal-request-transfer')" style="border:none; background:none; cursor:pointer;">X</button>
+        </div>
+        <form onsubmit="handleRequestTransfer(event)">
+            <div class="form-group">
+                <label>Source Institution</label>
+                <input type="text" id="trans-source" required placeholder="e.g., Stanford Online / External HEI">
+            </div>
+            <div class="form-group">
+                <label>Course Name</label>
+                <input type="text" id="trans-course" required placeholder="e.g., Advanced Machine Learning">
+            </div>
+            <div class="form-group">
+                <label>Credits Value</label>
+                <input type="number" id="trans-credits" min="1" max="10" required value="4">
+            </div>
+            <div class="form-group">
+                <label>Grade Obtained</label>
+                <input type="text" id="trans-grade" required placeholder="e.g., Grade A / 90%">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Submit Transfer Request</button>
+        </form>
+    </div>
+</div>
+
+<!-- APPLICATION STATE & LOGIC -->
+<script>
+    // Global Application State Data Store
+    const state = {
+        currentRole: 'student', // 'student', 'faculty', 'admin'
+        activeView: 'dashboard',
+        assignments: [
+            { id: 1, title: 'Database Normalization Task', subject: 'CS301 - Database Systems', dueDate: '2026-04-05', status: 'Pending', grade: 'N/A' },
+            { id: 2, title: 'Software Design Patterns Essay', subject: 'CS402 - Software Eng', dueDate: '2026-03-25', status: 'Submitted', grade: 'Awaiting' },
+            { id: 3, title: 'Algorithm Complexity Analysis', subject: 'CS302 - Algorithms', dueDate: '2026-03-10', status: 'Graded', grade: '92/100' }
+        ],
+        attendance: [
+            { subject: 'CS301 Database Systems', present: 22, total: 24, percent: 91 },
+            { subject: 'CS402 Software Engineering', present: 18, total: 22, percent: 81 },
+            { subject: 'CS302 Design & Algorithms', present: 14, total: 20, percent: 70 } // Low Attendance Trigger
+        ],
+        activities: [
+            { id: 1, title: 'AWS Certified Cloud Practitioner', category: 'Certification', org: 'Amazon Web Services', date: '2026-01-15' },
+            { id: 2, title: 'National AI Hackathon Winner', category: 'Academic Achievement', org: 'Tech Corp HEI', date: '2025-11-20' }
+        ],
+        creditTransfers: [
+            { id: 101, student: 'Alex Morgan', source: 'MIT Open Learning', destination: 'Current University', course: 'Quantum Computing Intro', credits: 4, grade: 'A', status: 'Pending' },
+            { id: 102, student: 'Alex Morgan', source: 'Coursera / Duke Tech', destination: 'Current University', course: 'Data Structures Specialization', credits: 3, grade: 'A+', status: 'Approved' }
+        ]
+    };
+
+    // Navigation Structure Definitions per Role
+    const navStructures = {
+        student: [
+            { id: 'dashboard', label: 'Dashboard', icon: 'layout-dashboard' },
+            { id: 'assignments', label: 'Assignments', icon: 'file-text' },
+            { id: 'attendance', label: 'Attendance', icon: 'calendar' },
+            { id: 'activities', label: 'Activity Ledger', icon: 'activity' },
+            { id: 'credits', label: 'Credits & Transfer', icon: 'award' },
+            { id: 'progress', label: 'Academic Progress', icon: 'trending-up' },
+            { id: 'profile', label: 'Student Profile', icon: 'user' }
+        ],
+        faculty: [
+            { id: 'dashboard', label: 'Faculty Dashboard', icon: 'layout-dashboard' },
+            { id: 'assignments', label: 'Manage Assignments', icon: 'file-text' },
+            { id: 'attendance', label: 'Class Attendance', icon: 'check-square' },
+            { id: 'profile', label: 'Faculty Profile', icon: 'user' }
+        ],
+        admin: [
+            { id: 'dashboard', label: 'Admin Dashboard', icon: 'layout-dashboard' },
+            { id: 'credits', label: 'HEI Credit Transfers', icon: 'arrow-right-left' },
+            { id: 'assignments', label: 'All Assignments', icon: 'file-text' },
+            { id: 'profile', label: 'Admin Profile', icon: 'user' }
+        ]
+    };
+
+    // Initialize Application
+    document.addEventListener('DOMContentLoaded', () => {
+        switchRole('student');
+    });
+
+    // Handle Switching Roles (Student / Faculty / Admin)
+    function switchRole(role) {
+        state.currentRole = role;
+        
+        // Update user header profile UI
+        const nameEl = document.getElementById('user-display-name');
+        const roleEl = document.getElementById('user-display-role');
+        const avatarEl = document.getElementById('user-avatar');
+
+        if (role === 'student') {
+            nameEl.innerText = "Alex Morgan";
+            roleEl.innerText = "Student • CS Sem 6";
+            avatarEl.innerText = "AM";
+        } else if (role === 'faculty') {
+            nameEl.innerText = "Dr. Robert Smith";
+            roleEl.innerText = "Professor • Computer Science";
+            avatarEl.innerText = "RS";
+        } else if (role === 'admin') {
+            nameEl.innerText = "System Administrator";
+            roleEl.innerText = "University Registrar Office";
+            avatarEl.innerText = "SA";
+        }
+
+        renderSidebar();
+        navigate('dashboard');
+    }
+
+    // Render Side Navigation dynamically based on Role
+    function renderSidebar() {
+        const navContainer = document.getElementById('nav-menu');
+        navContainer.innerHTML = '';
+
+        const links = navStructures[state.currentRole];
+        links.forEach(link => {
+            const li = document.createElement('li');
+            li.className = 'nav-item';
+            li.innerHTML = `
+                <button id="nav-btn-${link.id}" onclick="navigate('${link.id}')">
+                    <i data-lucide="${link.icon}"></i>
+                    <span>${link.label}</span>
+                </button>
+            `;
+            navContainer.appendChild(li);
+        });
+        lucide.createIcons();
+    }
+
+    // Dynamic Navigation Routing
+    function navigate(viewId) {
+        state.activeView = viewId;
+
+        // Active State UI Toggle
+        document.querySelectorAll('.nav-item button').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById(`nav-btn-${viewId}`);
+        if(activeBtn) activeBtn.classList.add('active');
+
+        // Hide all views
+        document.querySelectorAll('.view-section').forEach(view => view.classList.add('hidden'));
+
+        // Header Title Set
+        document.getElementById('page-title').innerText = viewId.toUpperCase().replace('-', ' ');
+
+        // Render View Content dynamically
+        if (viewId === 'dashboard') {
+            if (state.currentRole === 'student') {
+                document.getElementById('view-student-dashboard').classList.remove('hidden');
+                renderStudentDashboard();
+            } else if (state.currentRole === 'faculty') {
+                document.getElementById('view-faculty-dashboard').classList.remove('hidden');
+            } else if (state.currentRole === 'admin') {
+                document.getElementById('view-admin-dashboard').classList.remove('hidden');
+                renderAdminDashboard();
+            }
+        } else if (viewId === 'assignments') {
+            document.getElementById('view-assignments').classList.remove('hidden');
+            document.getElementById('faculty-assignment-controls').classList.toggle('hidden', state.currentRole !== 'faculty');
+            renderAssignments();
+        } else if (viewId === 'attendance') {
+            document.getElementById('view-attendance').classList.remove('hidden');
+            if(state.currentRole === 'faculty') {
+                document.getElementById('student-attendance-view').classList.add('hidden');
+                document.getElementById('faculty-attendance-view').classList.remove('hidden');
+            } else {
+                document.getElementById('student-attendance-view').classList.remove('hidden');
+                document.getElementById('faculty-attendance-view').classList.add('hidden');
+                renderStudentAttendance();
+            }
+        } else if (viewId === 'activities') {
+            document.getElementById('view-activities').classList.remove('hidden');
+            renderActivities();
+        } else if (viewId === 'credits') {
+            document.getElementById('view-credits').classList.remove('hidden');
+            renderCreditTransfers();
+        } else if (viewId === 'progress') {
+            document.getElementById('view-progress').classList.remove('hidden');
+        } else if (viewId === 'profile') {
+            document.getElementById('view-profile').classList.remove('hidden');
+        }
+
+        lucide.createIcons();
+    }
+
+    /* RENDERERS FOR DYNAMIC DATA */
+
+    function renderStudentDashboard() {
+        // Assignments Card Snippet
+        const assignBox = document.getElementById('dash-student-assignments');
+        assignBox.innerHTML = state.assignments.map(a => `
+            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border);">
+                <div>
+                    <div style="font-weight:600; font-size:0.9rem;">${a.title}</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">${a.subject}</div>
+                </div>
+                <span class="badge ${a.status === 'Submitted' ? 'badge-success' : 'badge-warning'}">${a.status}</span>
+            </div>
+        `).join('');
+
+        // Activities Timeline Card Snippet
+        const actBox = document.getElementById('dash-student-activities');
+        actBox.innerHTML = state.activities.slice(0, 2).map(act => `
+            <div class="timeline-item">
+                <div style="font-weight:600; font-size:0.85rem;">${act.title}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">${act.org} • ${act.date}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderAdminDashboard() {
+        const table = document.getElementById('admin-credit-transfers-table');
+        const pending = state.creditTransfers.filter(t => t.status === 'Pending');
+        document.getElementById('admin-pending-transfers-count').innerText = pending.length;
+
+        table.innerHTML = state.creditTransfers.map(t => `
+            <tr>
+                <td>${t.student}</td>
+                <td>${t.source}</td>
+                <td>${t.course}</td>
+                <td>${t.credits}</td>
+                <td><span class="badge ${t.status === 'Approved' ? 'badge-success' : (t.status === 'Rejected' ? 'badge-danger' : 'badge-warning')}">${t.status}</span></td>
+                <td>
+                    ${t.status === 'Pending' ? `
+                        <button class="btn btn-success" style="padding: 2px 8px; font-size:0.75rem;" onclick="processTransfer(${t.id}, 'Approved')">Approve</button>
+                        <button class="btn btn-danger" style="padding: 2px 8px; font-size:0.75rem;" onclick="processTransfer(${t.id}, 'Rejected')">Reject</button>
+                    ` : 'No Action'}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderAssignments() {
+        const tbody = document.getElementById('assignments-table-body');
+        tbody.innerHTML = state.assignments.map(a => `
+            <tr>
+                <td><b>${a.title}</b></td>
+                <td>${a.subject}</td>
+                <td>${a.dueDate}</td>
+                <td><span class="badge ${a.status === 'Submitted' || a.status === 'Graded' ? 'badge-success' : 'badge-warning'}">${a.status}</span></td>
+                <td>${a.grade}</td>
+                <td>
+                    ${a.status === 'Pending' && state.currentRole === 'student' ? 
+                        `<button class="btn btn-primary" style="padding:4px 8px;" onclick="openSubmitModal(${a.id})">Submit Work</button>` : 
+                        '<span style="color:var(--text-muted); font-size:0.8rem;">Completed</span>'}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function renderStudentAttendance() {
+        const container = document.getElementById('subject-attendance-list');
+        container.innerHTML = state.attendance.map(att => {
+            const isWarning = att.percent < 75;
+            return `
+                <div class="card">
+                    <div style="font-weight:600; margin-bottom:8px;">${att.subject}</div>
+                    <div style="font-size:1.5rem; font-weight:700; color:${isWarning ? 'var(--danger)' : 'var(--text-main)'}">${att.percent}%</div>
+                    <div style="font-size:0.8rem; color:var(--text-muted);">${att.present} / ${att.total} Classes Attended</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${isWarning ? 'danger' : ''}" style="width: ${att.percent}%;"></div>
+                    </div>
+                    ${isWarning ? `<div style="color:var(--danger); font-size:0.75rem; margin-top:6px; font-weight:600;">⚠️ Low Attendance Warning</div>` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderActivities() {
+        const container = document.getElementById('full-activity-timeline');
+        container.innerHTML = state.activities.map(act => `
+            <div class="timeline-item">
+                <div style="font-weight:600; font-size:1rem;">${act.title}</div>
+                <div style="font-size:0.85rem; color:var(--primary); font-weight:500;">${act.category}</div>
+                <div style="font-size:0.8rem; color:var(--text-muted);">${act.org} • Issued: ${act.date}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderCreditTransfers() {
+        const tbody = document.getElementById('student-credit-transfers-table');
+        tbody.innerHTML = state.creditTransfers.map(t => `
+            <tr>
+                <td>${t.source}</td>
+                <td>${t.destination}</td>
+                <td>${t.course}</td>
+                <td>${t.credits}</td>
+                <td>${t.grade}</td>
+                <td><span class="badge ${t.status === 'Approved' ? 'badge-success' : (t.status === 'Rejected' ? 'badge-danger' : 'badge-warning')}">${t.status}</span></td>
+            </tr>
+        `).join('');
+    }
+
+    /* INTERACTION HANDLERS & MODALS */
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+    function openSubmitModal(id) {
+        document.getElementById('submit-assign-id').value = id;
+        openModal('modal-submit-assignment');
+    }
+
+    function handleCreateAssignment(e) {
+        e.preventDefault();
+        const title = document.getElementById('new-assign-title').value;
+        const subject = document.getElementById('new-assign-subject').value;
+        const dueDate = document.getElementById('new-assign-date').value;
+
+        state.assignments.unshift({
+            id: Date.now(),
+            title: title,
+            subject: subject,
+            dueDate: dueDate,
+            status: 'Pending',
+            grade: 'N/A'
+        });
+
+        closeModal('modal-create-assignment');
+        renderAssignments();
+        alert('New Assignment Successfully Published!');
+    }
+
+    function handleSubmitAssignment(e) {
+        e.preventDefault();
+        const id = parseInt(document.getElementById('submit-assign-id').value);
+        const assign = state.assignments.find(a => a.id === id);
+        if(assign) {
+            assign.status = 'Submitted';
+            assign.grade = 'Awaiting';
+        }
+        closeModal('modal-submit-assignment');
+        renderAssignments();
+        alert('Assignment Submitted Successfully!');
+    }
+
+    function handleAddActivity(e) {
+        e.preventDefault();
+        state.activities.unshift({
+            id: Date.now(),
+            title: document.getElementById('act-title').value,
+            category: document.getElementById('act-cat').value,
+            org: document.getElementById('act-org').value,
+            date: document.getElementById('act-date').value
+        });
+        closeModal('modal-add-activity');
+        renderActivities();
+    }
+
+    function handleRequestTransfer(e) {
+        e.preventDefault();
+        state.creditTransfers.push({
+            id: Date.now(),
+            student: 'Alex Morgan',
+            source: document.getElementById('trans-source').value,
+            destination: 'Current University',
+            course: document.getElementById('trans-course').value,
+            credits: document.getElementById('trans-credits').value,
+            grade: document.getElementById('trans-grade').value,
+            status: 'Pending'
+        });
+        closeModal('modal-request-transfer');
+        renderCreditTransfers();
+    }
+
+    function processTransfer(id, newStatus) {
+        const req = state.creditTransfers.find(t => t.id === id);
+        if(req) req.status = newStatus;
+        renderAdminDashboard();
+    }
+
+    function toggleAttendance(btn) {
+        if(btn.classList.contains('btn-success')) {
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-danger');
+            btn.innerText = 'Absent';
+        } else {
+            btn.classList.remove('btn-danger');
+            btn.classList.add('btn-success');
+            btn.innerText = 'Present';
+        }
+    }
+</script>
+</body>
+</html>
